@@ -1,74 +1,290 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Drugging test</title>
+        <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
+        <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+        <script type="text/javascript" src="js/eemul.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/ui-lightness/jquery-ui-1.8.16.custom.css" />
+        <style type="text/css">
+            #gallery {
+                float: left;
+                width: 65%;
+                min-height: 12em;
+            }
+            * html #gallery {
+                height: 12em;
+            }/* IE6 */
+            .gallery.custom-state-active {
+                background: #eee;
+            }
+            .gallery li {
+                float: left;
+                width: 96px;
+                padding: 0.4em;
+                margin: 0 0.4em 0.4em 0;
+                text-align: center;
+            }
+            .gallery li h5 {
+                margin: 0 0 0.4em;
+                cursor: move;
+            }
+            .gallery li a {
+                float: right;
+            }
+            .gallery li a.ui-icon-zoomin {
+                float: left;
+            }
+            .gallery li img {
+                width: 100%;
+                cursor: move;
+            }
+            #trash {
+                float: right;
+                width: 32%;
+                min-height: 150px;
+                padding: 1%;
+            }
+            * html #trash {
+                height: 18em;
+            }/* IE6 */
+            #trash h4 {
+                line-height: 16px;
+                margin: 0 0 0.4em;
+            }
+            #trash h4 .ui-icon {
+                float: left;
+            }
+            #trash .gallery h5 {
+                display: none;
+            }
+            
+            ul{
+                margin: 0px;
+                padding: 0px;
+                list-style: none;
+            }
+            ul li {
+                margin: 10px 0;
+            }
+            ul span.i-wrapper {
+                display: inline-block;
+                width: 200px;
+            }
+        </style>
+        <script type="text/javascript">
+            $(function() {
+                // there's the gallery and the trash
+                var $gallery = $("#gallery"), $trash = $("#trash");
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Eemul : " />
+                // let the gallery items be draggable
+                $("li", $gallery).draggable({
+                    cancel : "a.ui-icon", // clicking an icon won't initiate dragging
+                    revert : "invalid", // when not dropped, the item will revert back to its initial position
+                    containment : $("#demo-frame").length ? "#demo-frame" : "document", // stick to demo-frame if present
+                    helper : "clone",
+                    cursor : "move"
+                });
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+                // let the trash be droppable, accepting the gallery items
+                $trash.droppable({
+                    accept : "#gallery > li",
+                    activeClass : "ui-state-highlight",
+                    drop : function(event, ui) {
+                        deleteImage(ui.draggable);
+                    }
+                });
 
-    <title>Eemul</title>
-  </head>
+                // let the gallery be droppable as well, accepting items from the trash
+                $gallery.droppable({
+                    accept : "#trash li",
+                    activeClass : "custom-state-active",
+                    drop : function(event, ui) {
+                        recycleImage(ui.draggable);
+                    }
+                });
 
-  <body>
+                // image deletion function
+                var recycle_icon = "<a href='link/to/recycle/script/when/we/have/js/off' title='Recycle this image' class='ui-icon ui-icon-refresh'>Recycle image</a>";
+                function deleteImage($item) {
+                    $item.fadeOut(function() {
+                        var $list = $("ul", $trash).length ? $("ul", $trash) : $("<ul class='gallery ui-helper-reset'/>").appendTo($trash);
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/4031651/eemul">View on GitHub</a>
+                        $item.find("a.ui-icon-trash").remove();
+                        $item.append(recycle_icon).appendTo($list).fadeIn(function() {
+                            $item.animate({
+                                width : "48px"
+                            }).find("img").animate({
+                                height : "36px"
+                            });
+                        });
+                    });
+                }
 
-          <h1 id="project_title">Eemul</h1>
-          <h2 id="project_tagline"></h2>
+                // image recycle function
+                var trash_icon = "<a href='link/to/trash/script/when/we/have/js/off' title='Delete this image' class='ui-icon ui-icon-trash'>Delete image</a>";
+                function recycleImage($item) {
+                    $item.fadeOut(function() {
+                        $item.find("a.ui-icon-refresh").remove().end().css("width", "96px").append(trash_icon).find("img").css("height", "72px").end().appendTo($gallery).fadeIn();
+                    });
+                }
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/4031651/eemul/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/4031651/eemul/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
+                // image preview function, demonstrating the ui.dialog used as a modal window
+                function viewLargerImage($link) {
+                    var src = $link.attr("href"), title = $link.siblings("img").attr("alt"), $modal = $("img[src$='" + src + "']");
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h3>Welcome to GitHub Pages.</h3>
+                    if($modal.length) {
+                        $modal.dialog("open");
+                    } else {
+                        var img = $("<img alt='" + title + "' width='384' height='288' style='display: none; padding: 8px;' />").attr("src", src).appendTo("body");
+                        setTimeout(function() {
+                            img.dialog({
+                                title : title,
+                                width : 400,
+                                modal : true
+                            });
+                        }, 1);
+                    }
+                }
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+                // resolve the icons behavior with event delegation
+                $("ul.gallery > li").click(function(event) {
+                    var $item = $(this), $target = $(event.target);
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
-</code></pre>
+                    if($target.is("a.ui-icon-trash")) {
+                        deleteImage($item);
+                    } else if($target.is("a.ui-icon-zoomin")) {
+                        viewLargerImage($target);
+                    } else if($target.is("a.ui-icon-refresh")) {
+                        recycleImage($item);
+                    }
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+                    return false;
+                });
+            });
+            var fillStr = "textarea\nTest";
+        </script>
+    </head>
+    <body>
+        <div class="demo ui-widget ui-helper-clearfix">
+            <ul id="gallery" class="gallery ui-helper-reset ui-helper-clearfix">
+                <li class="ui-widget-content ui-corner-tr">
+                    <h5 class="ui-widget-header">High Tatras</h5>
+                    <img src="images/high_tatras_min.jpg"  alt="The peaks of High Tatras" width="96" height="72" //>
+                    <a href="images/high_tatras.jpg" title="View larger image" class="ui-icon ui-icon-zoomin">View larger</a>
+                    <a href="link/to/trash/script/when/we/have/js/off" title="Delete this image" class="ui-icon ui-icon-trash">Delete image</a>
+                </li>
+                <li class="ui-widget-content ui-corner-tr">
+                    <h5 class="ui-widget-header">High Tatras 2</h5>
+                    <img src="images/high_tatras2_min.jpg"  alt="The chalet at the Green mountain lake" width="96" height="72" //>
+                    <a href="images/high_tatras2.jpg" title="View larger image" class="ui-icon ui-icon-zoomin">View larger</a>
+                    <a href="link/to/trash/script/when/we/have/js/off" title="Delete this image" class="ui-icon ui-icon-trash">Delete image</a>
+                </li>
+                <li class="ui-widget-content ui-corner-tr">
+                    <h5 class="ui-widget-header">High Tatras 3</h5>
+                    <img src="images/high_tatras3_min.jpg"  alt="Planning the ascent" width="96" height="72" //>
+                    <a href="images/high_tatras3.jpg" title="View larger image" class="ui-icon ui-icon-zoomin">View larger</a>
+                    <a href="link/to/trash/script/when/we/have/js/off" title="Delete this image" class="ui-icon ui-icon-trash">Delete image</a>
+                </li>
+                <li class="ui-widget-content ui-corner-tr">
+                    <h5 class="ui-widget-header">High Tatras 4</h5>
+                    <img src="images/high_tatras4_min.jpg"  alt="On top of Kozi kopka" width="96" height="72" //>
+                    <a href="images/high_tatras4.jpg" title="View larger image" class="ui-icon ui-icon-zoomin">View larger</a>
+                    <a href="link/to/trash/script/when/we/have/js/off" title="Delete this image" class="ui-icon ui-icon-trash">Delete image</a>
+                </li>
+            </ul>
+            <div id="trash" class="ui-widget-content ui-state-default">
+                <h4 class="ui-widget-header"><span class="ui-icon ui-icon-trash">Trash</span> Trash</h4>
+            </div>
 
-<h3>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Eemul maintained by <a href="https://github.com/4031651">4031651</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
-    </div>
-
-    
-
-  </body>
+        </div>
+        <ul style="margin-bottom:50px;border-bottom:1px solid #666;">
+        	<li>
+        	    <span class="i-wrapper"><input type="button" value="Emulate Click" onclick="eemul.click('#gallery li:eq(2) a.ui-icon-zoomin')"/></span>
+                eemul.click('#gallery li:eq(2) a.ui-icon-zoomin');
+        	</li>
+        	<li>
+        	    <span class="i-wrapper"><input type="button" value="Emulate Drag" onclick="eemul.dragTo('#gallery li', 1100, 110)"/></span>
+                eemul.dragTo('#gallery li', 1100, 110);
+        	</li>
+        	<li>
+        	    <span class="i-wrapper"><input type="button" value="Emulate dragToObject" onclick="eemul.dragToObject('#gallery li', '#trash')"/></span>
+                eemul.dragToObject('#gallery li', '#trash');
+        	</li>
+        </ul>
+        <div>
+            <ul id="forms-elms">
+                <li>
+                    <span class="i-wrapper"><input type="text" id="fill_iput"/></span>
+                    <span class="i-wrapper"><input type="button" value="Fill" onclick="eemul.fill('#fill_iput', 'text input')" /></span>
+                    eemul.fill('#fill_iput', 'text input');
+                </li>
+                <li style="margin-bottom:30px;border-bottom:1px solid #666;">
+                    <span class="i-wrapper"><textarea id="fill_text"></textarea></span>
+                    <span class="i-wrapper"><input type="button" value="Fill" onclick="eemul.fill('#fill_text', fillStr)" /></span>
+                    var fillStr = "textarea\nTest"; &nbsp;&nbsp;&nbsp; eemul.fill('#fill_text', fillStr);
+                </li>
+                <li>
+                    <span class="i-wrapper"><input type="text" id="for-focus" /></span>
+                    <span class="i-wrapper"><input type="button" value="Focus" onclick="eemul.focus('#for-focus')" /></span>
+                    eemul.focus('#for-focus');
+                </li>
+                <li style="margin-bottom:30px;border-bottom:1px solid #666;">
+                    <span class="i-wrapper"> </span>
+                    <span class="i-wrapper"><input type="button" value="Blur" onclick="eemul.blur('#for-focus')" /></span>
+                    eemul.blur('#for-focus');
+                </li>
+                <li>
+                    <span class="i-wrapper"><input type="checkbox" id="cb" /></span>
+                    <span class="i-wrapper"><input type="button" value="Check" onclick="eemul.check('#cb')" /></span>
+                    eemul.check('#cb');
+                </li>
+                <li style="margin-bottom:30px;border-bottom:1px solid #666;">
+                    <span class="i-wrapper"> </span>
+                    <span class="i-wrapper"><input type="button" value="Uheck" onclick="eemul.uncheck('#cb')" /></span>
+                    eemul.uncheck('#cb');
+                </li>
+                <li>
+                    <span class="i-wrapper">
+                        <select id="select">
+                            <option value="one">one</option>
+                            <option value="two">two</option>
+                            <option value="three">three</option>
+                        </select>
+                    </span>
+                    <span class="i-wrapper"><input type="button" value="Select one"   onclick="eemul.setSelect('#select', 'one')" /></span>
+                    eemul.setSelect('#select', 'one');
+                </li>
+                <li>
+                    <span class="i-wrapper"> </span>
+                    <span class="i-wrapper"><input type="button" value="Select two"   onclick="eemul.setSelect('#select', 'two')" /></span>
+                    eemul.setSelect('#select', 'two');
+                </li>
+                <li style="margin-bottom:30px;border-bottom:1px solid #666;">
+                    <span class="i-wrapper"> </span>
+                    <span class="i-wrapper"><input type="button" value="Select three" onclick="eemul.setSelect('#select', 'three')" /></span>
+                    eemul.setSelect('#select', 'three');
+                </li>
+                <li>
+                    <span class="i-wrapper">
+                        <input type="radio" name="radio" value="one" checked="checked" />one
+                        <input type="radio" name="radio" value="two" />two
+                        <input type="radio" name="radio" value="three" />three
+                    </span>
+                    <span class="i-wrapper"><input type="button" value="Select one"   onclick="eemul.setRadio('radio', 'one')" /></span>
+                    eemul.setRadio('radio', 'one');
+                </li>
+                <li>
+                    <span class="i-wrapper"> </span>
+                    <span class="i-wrapper"><input type="button" value="Select two"   onclick="eemul.setRadio('radio', 'two')" /></span>
+                    eemul.setRadio('radio', 'two');
+                </li>
+                <li>
+                    <span class="i-wrapper"> </span>
+                    <span class="i-wrapper"><input type="button" value="Select three" onclick="eemul.setRadio('radio', 'three')" /></span>
+                    eemul.setRadio('radio', 'three');
+                </li>
+            </ul>
+        </div>
+    </body>
 </html>
