@@ -7,7 +7,7 @@ Just include library into your page.
 <pre><code>&lt;script src="path/to/eemul.js" type="text/javascript">&lt;/script>
 </code></pre>
 
-###Usage
+###API
 #####eemul.click(Mixed: selector)
 Emulate click event.
  * selector - A selector, element or jQuery object for which will be trigger the event
