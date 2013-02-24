@@ -8,9 +8,10 @@ Just include library into your page.
 </code></pre>
 
 ###API
-#####eemul.click(Mixed: selector)
+#####eemul.click(Mixed: selector, Objec: coords)
 Emulate click event.
  * selector - A selector, element or jQuery object for which will be trigger the event
+ * coords - Hash that contains the top(y) and left(x) coordinates of the click. If not specified will be calculated automaticaly.
 
 #####eemul.dragTo(Mixed: selector, Number: dX, Number: dY, Number: time, Number: steps)
 Emulate dragging to specified point.
