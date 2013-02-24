@@ -11,7 +11,7 @@ Just include library into your page.
 #####eemul.click(Mixed: selector, Objec: coords)
 Emulate click event.
  * selector - A selector, element or jQuery object for which will be trigger the event
- * coords - Hash that contains the top(y) and left(x) coordinates of the click. If not specified will be calculated automaticaly.
+ * coords   - Hash that contains the top(y) and left(x) coordinates of the click. If not specified will be calculated automaticaly
 
 #####eemul.dragTo(Mixed: selector, Number: dX, Number: dY, Number: time, Number: steps)
 Emulate dragging to specified point.
@@ -51,11 +51,12 @@ Emulate keyup event.
  * selector - A selector, element or jQuery object for which will be trigger the event
  * keyCode  - Keycode
 
-#####eemul.fill(Mixed: selector, String: str, Number: time)
+#####eemul.fill(Mixed: selector, String: str, Number: time, Function: fn)
 Fill an text input
  * selector - A selector, element or jQuery object for which will be trigger the event
  * str      - The text to fill 
  * time     - The duration of the animation
+ * fn       - Callback function. If specified, will be called after the text was typed
 
 #####eemul.check(Mixed: selector)
 Set the checkbox to the selected state.
